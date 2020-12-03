@@ -81,6 +81,7 @@ func main() {
 
 		Show(grid)
 
+		// Done with the test case
 		t -= 1
 	}
 }
@@ -115,7 +116,7 @@ func Search(g Graph, start Vertex, searchFunc func(int) bool) int {
 		// loops.
 		visited[current] = true
 
-		// Found what we're looking for, return early.
+		// Found what we're looking for, calculate the distance and return early.
 		if searchFunc(g[current.i][current.j]) {
 			return int(math.Abs(float64(start.i-current.i)) +
 				math.Abs(float64(start.j-current.j)))
