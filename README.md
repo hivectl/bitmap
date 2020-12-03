@@ -1,6 +1,10 @@
 ## Prerequisites
 - Go 1.15+
 
+## Go Playground sample
+*Note: user input is disabled for the sandbox, test case is hardcoded into the main function.*  
+https://play.golang.org/p/VZfejZN8D2p
+
 ## How to run
 ```bash
 go run bitmap.go
