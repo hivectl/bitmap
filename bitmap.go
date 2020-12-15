@@ -123,8 +123,6 @@ func Map(g Graph, whites []Vertex) Graph {
 	nbrs := make([]Vertex, 0)
 
 	for {
-		fmt.Printf("distance = %d, current = [%d;%d]\n", d, current.i, current.j)
-
 		for _, n := range FindNeighbors(g, current) {
 			if g[n.i][n.j] != white && grid[n.i][n.j] == 0 {
 				grid[n.i][n.j] = d
