@@ -63,10 +63,6 @@ func main() {
 		// A graph to store a bitmap for the testcase.
 		bitmap := NewGraph(n, m)
 
-		// Grid will contain a distance map,
-		// it should have the same dimensions as the original bitmap.
-		// grid := NewGraph(n, m)
-
 		whites := make([]Vertex, 0)
 		// Read the bitmap description words
 		for i := 0; i < n; i += 1 {
