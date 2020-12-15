@@ -40,41 +40,27 @@ func TestFindNeighbors(t *testing.T) {
 	}
 }
 
-func TestSearch(t *testing.T) {
-	cases := []struct{
-		g Graph
-		start Vertex
-		searchFunc func(int) bool
-		expected int
+func TestMap(t *testing.T) {
+	cases := []struct {
+		g        Graph
+		whites   []Vertex
+		expected Graph
 	}{
 		{
-			g: NewGraph(2, 2),
-			start: Vertex{0, 0},
-			searchFunc: func(n int) bool {
-				return n != 0
-			},
-			expected: 0, // Nothing found
+			g:        NewGraph(2, 2),
+			expected: NewGraph(2, 2), // Nothing found
 		},
 		{
-			g: func() Graph {
-				g := NewGraph(2, 2)
-
-				g[1][1] = white
-
-				return g
-			}(),
-			start: Vertex{0, 0},
-			searchFunc: func(n int) bool {
-				return n == white
-			},
-			expected: 2,
+			g:        FromRows([]int{0, 0}, []int{0, 1}),
+			whites:   []Vertex{{0, 0}},
+			expected: FromRows([]int{2, 1}, []int{1, 0}),
 		},
 	}
 
 	for _, c := range cases {
-		got := Search(c.g, c.start, c.searchFunc)
+		got := Map(c.g, c.whites)
 
-		if got != c.expected {
+		if !reflect.DeepEqual(got, c.expected) {
 			t.Errorf("failed, expected = %v, got = %v", c.expected, got)
 		}
 	}

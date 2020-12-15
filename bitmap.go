@@ -4,7 +4,6 @@ import (
 	"container/list"
 	"fmt"
 	"log"
-	"math"
 	"strconv"
 )
 
@@ -20,6 +19,19 @@ func NewGraph(n, m int) Graph {
 	for i := range g {
 		g[i] = make([]int, m)
 	}
+
+	return g
+}
+
+// FromRows returns a graph made of passed rows entries.
+// If not rows passed an empty graph will be returned.
+func FromRows(rows ...[]int) Graph {
+	if len(rows) == 0 {
+		return NewGraph(0, 0)
+	}
+
+	g := make([][]int, len(rows))
+	copy(g, rows)
 
 	return g
 }
@@ -53,8 +65,9 @@ func main() {
 
 		// Grid will contain a distance map,
 		// it should have the same dimensions as the original bitmap.
-		grid := NewGraph(n, m)
+		// grid := NewGraph(n, m)
 
+		whites := make([]Vertex, 0)
 		// Read the bitmap description words
 		for i := 0; i < n; i += 1 {
 			w := ""
@@ -65,21 +78,14 @@ func main() {
 			for j, r := range []rune(w) {
 				v, _ := strconv.ParseInt(string(r), 10, 64)
 				bitmap[i][j] = int(v)
-			}
-		}
 
-		// Path lookup
-		for i := range bitmap {
-			for j := range bitmap[i] {
-				if bitmap[i][j] != white {
-					grid[i][j] = Search(bitmap, Vertex{i, j}, func(n int) bool {
-						return n == white
-					})
+				if v == white {
+					whites = append(whites, Vertex{i: i, j: j})
 				}
 			}
 		}
 
-		Show(grid)
+		Show(Map(bitmap, whites))
 
 		// Done with the test case
 		t -= 1
@@ -96,54 +102,66 @@ func Show(s [][]int) {
 	}
 }
 
-// Search traverses the graph 'g' using modified Breadth First Search
-// algorithm - instead of traversing the whole graph, it returns as
-// soon as 'searchFunc' returns 'true'.
-// The nature of BFS guarantees that first node we find that satisfies
-// the 'searchFunc' clause will be the closest to the 'start' vertex.
-func Search(g Graph, start Vertex, searchFunc func(int) bool) int {
-	visited := make(map[Vertex]bool)
-	current := start
+func Map(g Graph, whites []Vertex) Graph {
+	n, m := len(g), len(g[0])
+	grid := NewGraph(n, m)
 
-	// To avoid implementing our own type we will use
-	// 'container/list' instead.
-	// Using 'PushBack', 'Front' and 'Remove' we can make
-	// behave like a queue.
+	if len(whites) == 0 {
+		return grid
+	}
+
 	q := list.New()
 
+	for _, w := range whites {
+		q.PushBack(w)
+	}
+
+	e := q.Front()
+
+	// Change the current vertex to the next one in the queue.
+	current := e.Value.(Vertex)
+	q.Remove(e)
+
+	d := 1
+
+	nbrs := make([]Vertex, 0)
+
 	for {
-		// Make sure we mark the current vertice as visited to avoid endless
-		// loops.
-		visited[current] = true
+		fmt.Printf("distance = %d, current = [%d;%d]\n", d, current.i, current.j)
 
-		// Found what we're looking for, calculate the distance and return early.
-		if searchFunc(g[current.i][current.j]) {
-			return int(math.Abs(float64(start.i-current.i)) +
-				math.Abs(float64(start.j-current.j)))
-		}
-
-		// Find all the neighbors of the current vertex.
 		for _, n := range FindNeighbors(g, current) {
-			if !visited[n] {
-				q.PushBack(n)
+			if g[n.i][n.j] != white && grid[n.i][n.j] == 0 {
+				grid[n.i][n.j] = d
+				nbrs = append(nbrs, n)
 			}
 		}
 
+		// Prepare the next batch of nodes to visit.
 		e := q.Front()
 		if e == nil {
 			// Nothing else to visit, exit the loop
-			break
+			if len(nbrs) == 0 {
+				break
+			}
+
+			d += 1
+			for _, n := range nbrs {
+				q.PushBack(n)
+			}
+			nbrs = make([]Vertex, 0)
+
+			e = q.Front()
 		}
 
 		// Change the current vertex to the next one in the queue.
 		current = e.Value.(Vertex)
 
-		// Make sure to remove the vertice from the queue, so we don't visit
+		// Make sure to remove the vertex from the queue, so we don't visit
 		// it more than once.
 		q.Remove(e)
 	}
 
-	return 0
+	return grid
 }
 
 // FindNeighbors returns all the 'o' vertex
